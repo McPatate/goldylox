@@ -1,7 +1,7 @@
 use std::any::Any;
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum TokenType {
     // Syntax / single char tokens
     LeftParenthesis,
@@ -52,15 +52,21 @@ pub enum TokenType {
     EOF,
 }
 
+#[derive(Clone)]
 pub struct Token<'a> {
     pub r#type: TokenType,
     pub lexeme: String,
-    pub literal: &'a dyn Any,
+    pub literal: Option<&'a dyn Any>,
     pub line: usize,
 }
 
 impl<'a> Token<'a> {
-    fn new(r#type: TokenType, lexeme: &'a str, literal: &'a dyn Any, line: usize) -> Self {
+    pub fn new(
+        r#type: TokenType,
+        lexeme: String,
+        literal: Option<&'a dyn Any>,
+        line: usize,
+    ) -> Self {
         Self {
             r#type,
             lexeme: lexeme.to_string(),

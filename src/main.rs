@@ -7,25 +7,29 @@ use std::env;
 use std::fs;
 use std::io::{self, BufRead, Write};
 
-fn run(error_manager: &mut ErrorReporter, source: String) {
-    let scanner = Scanner::new(source);
-    let tokens = scanner.scan_tokens();
+fn run(error_reporter: &mut ErrorReporter, source: String) {
+    let mut scanner = Scanner::new(source);
+    let scan_result = scanner.scan_tokens();
 
-    for token in tokens {
-        println!("token : {}", token.value);
-    }
-    error_manager.error(
-        15,
-        "YouSuck",
-        "you are the worst human being on this planet",
-    );
+    match scan_result {
+        Ok(tokens) => {
+            for token in tokens {
+                println!("token : {}", token.lexeme);
+            }
+        }
+        Err(e) => error_reporter.error(
+            e.line,
+            &e.r#type.to_string(),
+            "occurred while scanning source code",
+        ),
+    };
 }
 
 fn run_file(filename: &str) {
-    let mut error_manager = ErrorReporter::new();
+    let mut error_reporter = ErrorReporter::new();
     let contents = fs::read_to_string(filename).expect("Something went wrong reading the file");
-    run(&mut error_manager, contents);
-    if error_manager.has_error() {
+    run(&mut error_reporter, contents);
+    if error_reporter.has_error() {
         std::process::exit(65);
     }
 }
@@ -36,14 +40,14 @@ fn repl_prompt(prompt: &str) {
 }
 
 fn run_prompt() {
-    let mut error_manager = ErrorReporter::new();
+    let mut error_reporter = ErrorReporter::new();
     let stdin = io::stdin();
 
     repl_prompt("> ");
     for line in stdin.lock().lines() {
-        run(&mut error_manager, line.unwrap());
+        run(&mut error_reporter, line.unwrap());
         repl_prompt("> ");
-        error_manager.reset();
+        error_reporter.reset();
     }
 }
 

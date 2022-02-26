@@ -1,23 +1,111 @@
 mod tokens;
 
-use tokens::Token;
+use std::fmt;
+use tokens::{Token, TokenType};
+
+#[derive(Debug)]
+pub enum ScanErrorTypes {
+    UnexpectedCharacter,
+}
+
+#[derive(Debug)]
+pub struct ScanError {
+    pub line: usize,
+    pub r#type: ScanErrorTypes,
+}
+
+impl ScanError {
+    fn new(line: usize, r#type: ScanErrorTypes) -> Self {
+        ScanError { line, r#type }
+    }
+}
+
+impl fmt::Display for ScanErrorTypes {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+pub type ScanTokenResult = std::result::Result<Token<'static>, ScanError>;
+pub type ScanResult = std::result::Result<Vec<Token<'static>>, ScanError>;
 
 pub struct Scanner {
-    pub source: String,
+    source: String,
+    start: usize,
+    current: usize,
+    line: usize,
+}
+
+impl Scanner {
+    fn is_at_end(&self) -> bool {
+        self.current >= self.source.len() - 1
+    }
+
+    // we do not support utf8 characters
+    fn advance(&mut self) -> char {
+        let ch = self.source.chars().nth(self.current).unwrap();
+        self.current += 1;
+        ch
+    }
+
+    //    fn add_token(&mut self, r#type: TokenType, literal: Option<&'a dyn Any>) {
+    //        let text = &self.source[self.start..self.current].to_owned();
+    //        self.tokens
+    //            .push(Token::new(r#type, text, literal, self.line));
+    //    }
+
+    fn scan_token(&mut self) -> ScanTokenResult {
+        let c = self.advance();
+        let text = self.source[self.start..self.current].to_owned();
+        match c {
+            '(' => Ok(Token::new(
+                TokenType::LeftParenthesis,
+                text,
+                None,
+                self.line,
+            )),
+            ')' => Ok(Token::new(
+                TokenType::RightParenthesis,
+                text,
+                None,
+                self.line,
+            )),
+            '{' => Ok(Token::new(TokenType::LeftBrace, text, None, self.line)),
+            '}' => Ok(Token::new(TokenType::RightBrace, text, None, self.line)),
+            ',' => Ok(Token::new(TokenType::Comma, text, None, self.line)),
+            '.' => Ok(Token::new(TokenType::Dot, text, None, self.line)),
+            '-' => Ok(Token::new(TokenType::Minus, text, None, self.line)),
+            '+' => Ok(Token::new(TokenType::Plus, text, None, self.line)),
+            ';' => Ok(Token::new(TokenType::Semicolon, text, None, self.line)),
+            '*' => Ok(Token::new(TokenType::Star, text, None, self.line)),
+            _ => Err(ScanError::new(
+                self.line,
+                ScanErrorTypes::UnexpectedCharacter,
+            )),
+        }
+    }
 }
 
 impl Scanner {
     pub fn new(source: String) -> Self {
-        Self { source }
+        Self {
+            source,
+            start: 0,
+            current: 0,
+            line: 1,
+        }
     }
 
-    pub fn scan_tokens(&self) -> Vec<Token> {
-        let mut tokens: Vec<Token> = Vec::new();
-        for t in self.source.split(' ') {
-            tokens.push(Token {
-                value: t.to_string(),
-            });
+    pub fn scan_tokens(&mut self) -> ScanResult {
+        let mut tokens = Vec::new();
+        loop {
+            let token = self.scan_token()?;
+            tokens.push(token);
+            if self.is_at_end() {
+                break;
+            }
         }
-        tokens
+        tokens.push(Token::new(TokenType::EOF, "".to_owned(), None, self.line));
+        Ok(tokens)
     }
 }

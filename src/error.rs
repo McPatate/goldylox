@@ -1,3 +1,10 @@
+// pub trait ErrorReporter {
+//     fn new() -> Self;
+//     fn error(&mut self, line: usize, r#type: &str, message: &str);
+//     fn reset(&mut self);
+//     fn has_error(&self) -> bool;
+// }
+
 pub struct ErrorReporter {
     program_error: bool,
 }
@@ -10,7 +17,7 @@ impl ErrorReporter {
     }
 
     pub fn error(&mut self, line: usize, r#type: &str, message: &str) {
-        println!("[line {}] Error {} : {}", line, r#type, message);
+        println!("[line {}] {} error : {}", line, r#type, message);
         self.program_error = true;
     }
 
