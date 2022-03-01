@@ -52,19 +52,19 @@ pub enum TokenType {
     EOF,
 }
 
-#[derive(Clone)]
-pub struct Token<'a> {
+#[derive(Debug)]
+pub struct Token {
     pub r#type: TokenType,
     pub lexeme: String,
-    pub literal: Option<&'a dyn Any>,
+    pub literal: Option<Box<dyn Any>>,
     pub line: usize,
 }
 
-impl<'a> Token<'a> {
+impl Token {
     pub fn new(
         r#type: TokenType,
         lexeme: String,
-        literal: Option<&'a dyn Any>,
+        literal: Option<Box<dyn Any>>,
         line: usize,
     ) -> Self {
         Self {
@@ -76,7 +76,7 @@ impl<'a> Token<'a> {
     }
 }
 
-impl<'a> fmt::Display for Token<'a> {
+impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // Customize so only `x` and `y` are denoted.
         write!(f, "{:?} {} {:?}", self.r#type, self.lexeme, self.literal)

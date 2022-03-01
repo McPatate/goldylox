@@ -13,7 +13,7 @@ fn run(error_reporter: &mut ErrorReporter, source: String) {
 
     match scan_result {
         Ok(tokens) => {
-            for token in tokens {
+            for token in &tokens {
                 println!("token : {}", token.lexeme);
             }
         }
