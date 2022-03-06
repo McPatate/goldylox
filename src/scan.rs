@@ -1,4 +1,4 @@
-mod tokens;
+pub mod tokens;
 
 use std::fmt;
 use tokens::{Token, TokenType};
@@ -74,6 +74,14 @@ impl Scanner {
         self.source.chars().nth(self.current).unwrap()
     }
 
+    fn peek_next(&self) -> char {
+        if self.current + 1 >= self.source.len() {
+            '\0'
+        } else {
+            self.source.chars().nth(self.current + 1).unwrap()
+        }
+    }
+
     fn string(&mut self, text: String) -> ScanTokenResult {
         while self.peek() != '"' && !self.is_at_end() {
             if self.peek() == '\n' {
@@ -93,6 +101,25 @@ impl Scanner {
         let value = self.source[self.start + 1..self.current - 1].to_owned();
         Ok(Some(Token::new(
             TokenType::String,
+            text,
+            Some(Box::new(value)),
+            self.line,
+        )))
+    }
+
+    fn number(&mut self, text: String) -> ScanTokenResult {
+        while self.peek().is_digit(10) {
+            self.advance();
+        }
+        if self.peek() == '.' && self.peek_next().is_digit(10) {
+            self.advance();
+            while self.peek().is_digit(10) {
+                self.advance();
+            }
+        }
+        let value: f64 = self.source[self.start..self.current].parse().unwrap();
+        Ok(Some(Token::new(
+            TokenType::Number,
             text,
             Some(Box::new(value)),
             self.line,
@@ -204,10 +231,16 @@ impl Scanner {
                 Ok(None)
             }
             '"' => self.string(text),
-            _ => Err(ScanError::new(
-                self.line,
-                ScanErrorTypes::UnexpectedCharacter,
-            )),
+            c => {
+                if c.is_digit(10) {
+                    self.number(text)
+                } else {
+                    Err(ScanError::new(
+                        self.line,
+                        ScanErrorTypes::UnexpectedCharacter,
+                    ))
+                }
+            }
         }
     }
 }

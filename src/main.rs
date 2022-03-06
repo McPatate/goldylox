@@ -2,7 +2,7 @@ mod error;
 mod scan;
 
 use error::ErrorReporter;
-use scan::Scanner;
+use scan::{tokens::TokenType, Scanner};
 use std::env;
 use std::fs;
 use std::io::{self, BufRead, Write};
@@ -15,6 +15,19 @@ fn run(error_reporter: &mut ErrorReporter, source: String) {
         Ok(tokens) => {
             for token in &tokens {
                 println!("token : {}", token.lexeme);
+                match token.r#type {
+                    TokenType::String => {
+                        if let Some(v) = token.literal.as_ref() {
+                            println!("string = {:?}", (*v).downcast_ref::<String>());
+                        }
+                    }
+                    TokenType::Number => {
+                        if let Some(v) = token.literal.as_ref() {
+                            println!("number = {:?}", (*v).downcast_ref::<f64>());
+                        }
+                    }
+                    _ => println!("Token = {:?}", token.lexeme),
+                }
             }
         }
         Err(e) => error_reporter.error(
