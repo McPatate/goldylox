@@ -2,7 +2,7 @@ mod error;
 mod scan;
 
 use error::ErrorReporter;
-use scan::{tokens::TokenType, Scanner};
+use scan::{tokens::TokenKind, Scanner};
 use std::env;
 use std::fs;
 use std::io::{self, BufRead, Write};
@@ -14,8 +14,8 @@ fn run(error_reporter: &mut ErrorReporter, source: String) {
     match scan_result {
         Ok(tokens) => {
             for token in &tokens {
-                match token.r#type {
-                    TokenType::String => {
+                match token.kind {
+                    TokenKind::String => {
                         if let Some(v) = token.literal.as_ref() {
                             println!(
                                 "token : {}, string = {:?}",
@@ -24,7 +24,7 @@ fn run(error_reporter: &mut ErrorReporter, source: String) {
                             );
                         }
                     }
-                    TokenType::Number => {
+                    TokenKind::Number => {
                         if let Some(v) = token.literal.as_ref() {
                             println!(
                                 "token : {}, number = {:?}",
@@ -39,7 +39,7 @@ fn run(error_reporter: &mut ErrorReporter, source: String) {
         }
         Err(e) => error_reporter.error(
             e.line,
-            &e.r#type.to_string(),
+            &e.kind.to_string(),
             "occurred while scanning source code",
         ),
     };

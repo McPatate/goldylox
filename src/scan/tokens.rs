@@ -2,7 +2,7 @@ use std::any::Any;
 use std::fmt;
 
 #[derive(Debug, Clone)]
-pub enum TokenType {
+pub enum TokenKind {
     // Syntax / single char tokens
     LeftParenthesis,
     RightParenthesis,
@@ -54,7 +54,7 @@ pub enum TokenType {
 
 #[derive(Debug)]
 pub struct Token {
-    pub r#type: TokenType,
+    pub kind: TokenKind,
     pub lexeme: String,
     pub literal: Option<Box<dyn Any>>,
     pub line: usize,
@@ -62,13 +62,13 @@ pub struct Token {
 
 impl Token {
     pub fn new(
-        r#type: TokenType,
+        kind: TokenKind,
         lexeme: String,
         literal: Option<Box<dyn Any>>,
         line: usize,
     ) -> Self {
         Self {
-            r#type,
+            kind,
             lexeme: lexeme.to_string(),
             literal,
             line,
@@ -79,6 +79,6 @@ impl Token {
 impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // Customize so only `x` and `y` are denoted.
-        write!(f, "{:?} {} {:?}", self.r#type, self.lexeme, self.literal)
+        write!(f, "{:?} {} {:?}", self.kind, self.lexeme, self.literal)
     }
 }

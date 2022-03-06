@@ -1,7 +1,7 @@
 pub mod tokens;
 
 use std::fmt;
-use tokens::{Token, TokenType};
+use tokens::{Token, TokenKind};
 
 #[derive(Debug)]
 pub enum ScanErrorTypes {
@@ -12,12 +12,12 @@ pub enum ScanErrorTypes {
 #[derive(Debug)]
 pub struct ScanError {
     pub line: usize,
-    pub r#type: ScanErrorTypes,
+    pub kind: ScanErrorTypes,
 }
 
 impl ScanError {
-    fn new(line: usize, r#type: ScanErrorTypes) -> Self {
-        ScanError { line, r#type }
+    fn new(line: usize, kind: ScanErrorTypes) -> Self {
+        ScanError { line, kind }
     }
 }
 
@@ -49,10 +49,10 @@ impl Scanner {
         ch
     }
 
-    //    fn add_token(&mut self, r#type: TokenType, literal: Option<&'a dyn Any>) {
+    //    fn add_token(&mut self, kind: TokenKind, literal: Option<&'a dyn Any>) {
     //        let text = &self.source[self.start..self.current].to_owned();
     //        self.tokens
-    //            .push(Token::new(r#type, text, literal, self.line));
+    //            .push(Token::new(kind, text, literal, self.line));
     //    }
 
     fn match_next_char(&mut self, next: char) -> bool {
@@ -100,7 +100,7 @@ impl Scanner {
         self.advance();
         let value = self.source[self.start + 1..self.current - 1].to_owned();
         Ok(Some(Token::new(
-            TokenType::String,
+            TokenKind::String,
             text,
             Some(Box::new(value)),
             self.line,
@@ -119,7 +119,7 @@ impl Scanner {
         }
         let value: f64 = self.source[self.start..self.current].parse().unwrap();
         Ok(Some(Token::new(
-            TokenType::Number,
+            TokenKind::Number,
             text,
             Some(Box::new(value)),
             self.line,
@@ -131,23 +131,23 @@ impl Scanner {
             self.advance();
         }
         let identifier = match &self.source[self.start..self.current] {
-            "and" => TokenType::And,
-            "class" => TokenType::Class,
-            "else" => TokenType::Else,
-            "false" => TokenType::False,
-            "for" => TokenType::For,
-            "fun" => TokenType::Fun,
-            "if" => TokenType::If,
-            "nil" => TokenType::Nil,
-            "or" => TokenType::Or,
-            "print" => TokenType::Print,
-            "return" => TokenType::Return,
-            "super" => TokenType::Super,
-            "this" => TokenType::This,
-            "true" => TokenType::True,
-            "var" => TokenType::Var,
-            "while" => TokenType::While,
-            _ => TokenType::Identifier,
+            "and" => TokenKind::And,
+            "class" => TokenKind::Class,
+            "else" => TokenKind::Else,
+            "false" => TokenKind::False,
+            "for" => TokenKind::For,
+            "fun" => TokenKind::Fun,
+            "if" => TokenKind::If,
+            "nil" => TokenKind::Nil,
+            "or" => TokenKind::Or,
+            "print" => TokenKind::Print,
+            "return" => TokenKind::Return,
+            "super" => TokenKind::Super,
+            "this" => TokenKind::This,
+            "true" => TokenKind::True,
+            "var" => TokenKind::Var,
+            "while" => TokenKind::While,
+            _ => TokenKind::Identifier,
         };
         Ok(Some(Token::new(identifier, text, None, self.line)))
     }
@@ -157,86 +157,86 @@ impl Scanner {
         let text = self.source[self.start..self.current].to_owned();
         let res = match c {
             '(' => Ok(Some(Token::new(
-                TokenType::LeftParenthesis,
+                TokenKind::LeftParenthesis,
                 text,
                 None,
                 self.line,
             ))),
             ')' => Ok(Some(Token::new(
-                TokenType::RightParenthesis,
+                TokenKind::RightParenthesis,
                 text,
                 None,
                 self.line,
             ))),
             '{' => Ok(Some(Token::new(
-                TokenType::LeftBrace,
+                TokenKind::LeftBrace,
                 text,
                 None,
                 self.line,
             ))),
             '}' => Ok(Some(Token::new(
-                TokenType::RightBrace,
+                TokenKind::RightBrace,
                 text,
                 None,
                 self.line,
             ))),
-            ',' => Ok(Some(Token::new(TokenType::Comma, text, None, self.line))),
-            '.' => Ok(Some(Token::new(TokenType::Dot, text, None, self.line))),
-            '-' => Ok(Some(Token::new(TokenType::Minus, text, None, self.line))),
-            '+' => Ok(Some(Token::new(TokenType::Plus, text, None, self.line))),
+            ',' => Ok(Some(Token::new(TokenKind::Comma, text, None, self.line))),
+            '.' => Ok(Some(Token::new(TokenKind::Dot, text, None, self.line))),
+            '-' => Ok(Some(Token::new(TokenKind::Minus, text, None, self.line))),
+            '+' => Ok(Some(Token::new(TokenKind::Plus, text, None, self.line))),
             ';' => Ok(Some(Token::new(
-                TokenType::Semicolon,
+                TokenKind::Semicolon,
                 text,
                 None,
                 self.line,
             ))),
-            '*' => Ok(Some(Token::new(TokenType::Star, text, None, self.line))),
+            '*' => Ok(Some(Token::new(TokenKind::Star, text, None, self.line))),
             '!' => {
                 if self.match_next_char('=') {
                     Ok(Some(Token::new(
-                        TokenType::BangEqual,
+                        TokenKind::BangEqual,
                         text,
                         None,
                         self.line,
                     )))
                 } else {
-                    Ok(Some(Token::new(TokenType::Bang, text, None, self.line)))
+                    Ok(Some(Token::new(TokenKind::Bang, text, None, self.line)))
                 }
             }
             '=' => {
                 if self.match_next_char('=') {
                     Ok(Some(Token::new(
-                        TokenType::EqualEqual,
+                        TokenKind::EqualEqual,
                         text,
                         None,
                         self.line,
                     )))
                 } else {
-                    Ok(Some(Token::new(TokenType::Equal, text, None, self.line)))
+                    Ok(Some(Token::new(TokenKind::Equal, text, None, self.line)))
                 }
             }
             '<' => {
                 if self.match_next_char('=') {
                     Ok(Some(Token::new(
-                        TokenType::LessEqual,
+                        TokenKind::LessEqual,
                         text,
                         None,
                         self.line,
                     )))
                 } else {
-                    Ok(Some(Token::new(TokenType::Less, text, None, self.line)))
+                    Ok(Some(Token::new(TokenKind::Less, text, None, self.line)))
                 }
             }
             '>' => {
                 if self.match_next_char('=') {
                     Ok(Some(Token::new(
-                        TokenType::GreaterEqual,
+                        TokenKind::GreaterEqual,
                         text,
                         None,
                         self.line,
                     )))
                 } else {
-                    Ok(Some(Token::new(TokenType::Greater, text, None, self.line)))
+                    Ok(Some(Token::new(TokenKind::Greater, text, None, self.line)))
                 }
             }
             '/' => {
@@ -246,7 +246,7 @@ impl Scanner {
                     }
                     Ok(None)
                 } else {
-                    Ok(Some(Token::new(TokenType::Slash, text, None, self.line)))
+                    Ok(Some(Token::new(TokenKind::Slash, text, None, self.line)))
                 }
             }
             ' ' => Ok(None),
@@ -296,7 +296,7 @@ impl Scanner {
                 None => (),
             }
         }
-        tokens.push(Token::new(TokenType::EOF, "".to_owned(), None, self.line));
+        tokens.push(Token::new(TokenKind::EOF, "".to_owned(), None, self.line));
         Ok(tokens)
     }
 }
