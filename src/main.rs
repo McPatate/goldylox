@@ -14,16 +14,23 @@ fn run(error_reporter: &mut ErrorReporter, source: String) {
     match scan_result {
         Ok(tokens) => {
             for token in &tokens {
-                println!("token : {}", token.lexeme);
                 match token.r#type {
                     TokenType::String => {
                         if let Some(v) = token.literal.as_ref() {
-                            println!("string = {:?}", (*v).downcast_ref::<String>());
+                            println!(
+                                "token : {}, string = {:?}",
+                                token.lexeme,
+                                (*v).downcast_ref::<String>()
+                            );
                         }
                     }
                     TokenType::Number => {
                         if let Some(v) = token.literal.as_ref() {
-                            println!("number = {:?}", (*v).downcast_ref::<f64>());
+                            println!(
+                                "token : {}, number = {:?}",
+                                token.lexeme,
+                                (*v).downcast_ref::<f64>()
+                            );
                         }
                     }
                     _ => println!("Token = {:?}", token.lexeme),

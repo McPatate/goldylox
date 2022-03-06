@@ -42,7 +42,7 @@ impl Scanner {
         self.current >= self.source.len()
     }
 
-    // we do not support utf8 characters
+    /// Does not support utf8 characters
     fn advance(&mut self) -> char {
         let ch = self.source.chars().nth(self.current).unwrap();
         self.current += 1;
@@ -108,12 +108,12 @@ impl Scanner {
     }
 
     fn number(&mut self, text: String) -> ScanTokenResult {
-        while self.peek().is_digit(10) {
+        while self.peek().is_ascii_digit() {
             self.advance();
         }
-        if self.peek() == '.' && self.peek_next().is_digit(10) {
+        if self.peek() == '.' && self.peek_next().is_ascii_digit() {
             self.advance();
-            while self.peek().is_digit(10) {
+            while self.peek().is_ascii_digit() {
                 self.advance();
             }
         }
@@ -129,7 +129,7 @@ impl Scanner {
     fn scan_token(&mut self) -> ScanTokenResult {
         let c = self.advance();
         let text = self.source[self.start..self.current].to_owned();
-        match c {
+        let res = match c {
             '(' => Ok(Some(Token::new(
                 TokenType::LeftParenthesis,
                 text,
@@ -232,7 +232,7 @@ impl Scanner {
             }
             '"' => self.string(text),
             c => {
-                if c.is_digit(10) {
+                if c.is_ascii_digit() {
                     self.number(text)
                 } else {
                     Err(ScanError::new(
@@ -241,7 +241,9 @@ impl Scanner {
                     ))
                 }
             }
-        }
+        };
+        self.start = self.current;
+        res
     }
 }
 
@@ -258,12 +260,12 @@ impl Scanner {
     pub fn scan_tokens(&mut self) -> ScanResult {
         let mut tokens = Vec::new();
         loop {
+            if self.is_at_end() {
+                break;
+            }
             match self.scan_token()? {
                 Some(token) => tokens.push(token),
                 None => (),
-            }
-            if self.is_at_end() {
-                break;
             }
         }
         tokens.push(Token::new(TokenType::EOF, "".to_owned(), None, self.line));
