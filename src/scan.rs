@@ -126,6 +126,32 @@ impl Scanner {
         )))
     }
 
+    fn identifier(&mut self, text: String) -> ScanTokenResult {
+        while self.peek().is_ascii_digit() || self.peek().is_ascii_alphabetic() {
+            self.advance();
+        }
+        let identifier = match &self.source[self.start..self.current] {
+            "and" => TokenType::And,
+            "class" => TokenType::Class,
+            "else" => TokenType::Else,
+            "false" => TokenType::False,
+            "for" => TokenType::For,
+            "fun" => TokenType::Fun,
+            "if" => TokenType::If,
+            "nil" => TokenType::Nil,
+            "or" => TokenType::Or,
+            "print" => TokenType::Print,
+            "return" => TokenType::Return,
+            "super" => TokenType::Super,
+            "this" => TokenType::This,
+            "true" => TokenType::True,
+            "var" => TokenType::Var,
+            "while" => TokenType::While,
+            _ => TokenType::Identifier,
+        };
+        Ok(Some(Token::new(identifier, text, None, self.line)))
+    }
+
     fn scan_token(&mut self) -> ScanTokenResult {
         let c = self.advance();
         let text = self.source[self.start..self.current].to_owned();
@@ -234,6 +260,8 @@ impl Scanner {
             c => {
                 if c.is_ascii_digit() {
                     self.number(text)
+                } else if c.is_ascii_alphabetic() {
+                    self.identifier(text)
                 } else {
                     Err(ScanError::new(
                         self.line,
