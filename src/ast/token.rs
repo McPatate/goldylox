@@ -1,4 +1,4 @@
-use std::any::Any;
+use crate::ast::expr::Lit;
 use std::fmt;
 
 #[derive(Debug, Clone)]
@@ -28,8 +28,7 @@ pub enum TokenKind {
 
     // Literals
     Identifier,
-    r#String,
-    Number,
+    Lit,
 
     // Keywords
     And,
@@ -56,17 +55,12 @@ pub enum TokenKind {
 pub struct Token {
     pub kind: TokenKind,
     pub lexeme: String,
-    pub literal: Option<Box<dyn Any>>,
+    pub literal: Option<Lit>,
     pub line: usize,
 }
 
 impl Token {
-    pub fn new(
-        kind: TokenKind,
-        lexeme: String,
-        literal: Option<Box<dyn Any>>,
-        line: usize,
-    ) -> Self {
+    pub fn new(kind: TokenKind, lexeme: String, literal: Option<Lit>, line: usize) -> Self {
         Self {
             kind,
             lexeme: lexeme.to_string(),
@@ -78,7 +72,6 @@ impl Token {
 
 impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // Customize so only `x` and `y` are denoted.
         write!(f, "{:?} {} {:?}", self.kind, self.lexeme, self.literal)
     }
 }

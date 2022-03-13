@@ -1,8 +1,13 @@
+mod ast;
+mod ast_printer;
 mod error;
 mod scan;
 
+use ast::expr::{Expr, ExprKind, Lit, LitKind};
+use ast::token::{Token, TokenKind};
+use ast_printer::AstPrinter;
 use error::ErrorReporter;
-use scan::{tokens::TokenKind, Scanner};
+use scan::Scanner;
 use std::env;
 use std::fs;
 use std::io::{self, BufRead, Write};
@@ -15,22 +20,9 @@ fn run(error_reporter: &mut ErrorReporter, source: String) {
         Ok(tokens) => {
             for token in &tokens {
                 match token.kind {
-                    TokenKind::String => {
-                        if let Some(v) = token.literal.as_ref() {
-                            println!(
-                                "token : {}, string = {:?}",
-                                token.lexeme,
-                                (*v).downcast_ref::<String>()
-                            );
-                        }
-                    }
-                    TokenKind::Number => {
-                        if let Some(v) = token.literal.as_ref() {
-                            println!(
-                                "token : {}, number = {:?}",
-                                token.lexeme,
-                                (*v).downcast_ref::<f64>()
-                            );
+                    TokenKind::Lit => {
+                        if let Some(lit) = &token.literal {
+                            println!("{:?}", lit);
                         }
                     }
                     _ => println!("Token = {:?}", token.lexeme),

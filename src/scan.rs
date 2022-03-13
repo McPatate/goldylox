@@ -1,7 +1,7 @@
-pub mod tokens;
+use crate::ast::expr::{Lit, LitKind};
+use crate::ast::token::{Token, TokenKind};
 
 use std::fmt;
-use tokens::{Token, TokenKind};
 
 #[derive(Debug)]
 pub enum ScanErrorTypes {
@@ -100,9 +100,11 @@ impl Scanner {
         self.advance();
         let value = self.source[self.start + 1..self.current - 1].to_owned();
         Ok(Some(Token::new(
-            TokenKind::String,
+            TokenKind::Lit,
             text,
-            Some(Box::new(value)),
+            Some(Lit {
+                kind: LitKind::Str(value),
+            }),
             self.line,
         )))
     }
@@ -119,9 +121,11 @@ impl Scanner {
         }
         let value: f64 = self.source[self.start..self.current].parse().unwrap();
         Ok(Some(Token::new(
-            TokenKind::Number,
+            TokenKind::Lit,
             text,
-            Some(Box::new(value)),
+            Some(Lit {
+                kind: LitKind::Number(value),
+            }),
             self.line,
         )))
     }
